@@ -1,0 +1,76 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+<!-- Message alert -->
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-info" role="alert" {% if message.tags %} class="{{ message.tags }}" {% endif %}>
+    {{ message }}
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- Category list -->
+{% if categories %}
+{% for category in categories %}
+<a class="btn btn-outline-info btn-sm" href="category/{{category.category}}" role="button" style="margin: 0 8px;">
+    {{ category.category }}
+</a>
+{% endfor %}
+{% endif %}
+
+<!-- List of products -->
+<section class="wrap_container" style="background-color: rgb(255, 255, 255);">
+    <div class="text-center container">
+        <h4 class="mt-1 mb-2" style="padding: 10px;text-align: center;">
+            <strong>Active Listings</strong>
+        </h4>
+        <div class="row">
+            <!-- Loop all of the auctions -->
+            {% for auction in listings %}
+            <div class="col-lg-3 col-md-11 mb-3">
+                <div class="card">
+                    <div class="bg-image hover-zoom ripple ripple-surface ripple-surface-light"
+                        data-mdb-ripple-color="light">
+                        <a href="{% url 'listing' auction.id %}">
+                            <img src="{{ auction.image }}" class="w-100" />
+                        </a>
+
+                        <div class="mask">
+                            <div class="d-flex justify-content-start align-items-end h-100">
+                                <!-- Status -->
+                                {% if auction.winner is None %}
+                                <h5><span class="badge bg-primary ms-2">Available</span></h5>
+                                {% else %}
+                                <h5><span class="badge bg-danger ms-2">Sold</span></h5>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="hover-overlay">
+                            <div class="mask" style="background-color: rgba(251, 251, 251, 0.15);"></div>
+                        </div>
+
+                    </div>
+                    <!-- detial section -->
+                    <div class="card-body">
+                        <a href="{% url 'listing' auction.id %}" class="text-reset">
+                            <h5 class="card-title mb-3">{{ auction.title }}</h5>
+                        </a>
+                        <a href="/category/{{auction.category}}" class="text-reset">
+                            <p>{{auction.category}}</p>
+                        </a>
+                        <h6 class="mb-3">
+                            <s>${{ auction.price }}</s>
+                            <strong class="ms-2 text-danger">{{ auction.starting_bid }}</strong>
+                        </h6>
+                    </div>
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}

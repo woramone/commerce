@@ -1,0 +1,15 @@
+{% extends "auctions/layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block body %}
+<h4 class="mt-1 mb-2" style="padding: 10px; text-align: center;">
+    <strong>Create Listing</strong>
+</h4>
+<!-- Create form -->
+<form action="{% url 'create' %}" method="post" style="margin: auto; width: 220px;">
+    {% csrf_token %}
+    {{ listing_form|crispy }}
+
+    <input type="submit" name="Submit" style="margin-top: 10px;">
+</form>
+{% endblock %}

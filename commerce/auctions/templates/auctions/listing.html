@@ -1,0 +1,137 @@
+{% extends "auctions/layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block body %}
+<!-- Declare winner -->
+<!-- Known bug: Still try to find out how to show seperately... -->
+{% if auction.active is False and user.username is auction.winner %}
+<div class="alert alert-info" role="alert">
+    Congratulations! {{ auction.winner }} You won this auction!
+</div>
+{% elif auction.active is False %}
+<!-- Only show this part -->
+<div class="alert alert-warning" role="alert">
+    This auction has ended. The winner is {{ auction.winner|capfirst }}
+</div>
+{% endif %}
+
+<!-- Message alert -->
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-info" role="alert" {% if message.tags %} class="{{ message.tags }}" {% endif %}>
+    {{ message }}
+</div>
+{% endfor %}
+{% endif %}
+
+<h4 class="mt-1 mb-2" style="padding: 10px; text-align: center;">
+    <strong>Listing</strong>
+</h4>
+<div class="card mb-3" style="max-width: 1200px;">
+    <div class="row g-0">
+        <div class="col-md-4">
+            <!-- Category -->
+            {% if auction.category %}
+            <a class="btn btn-outline-info btn-sm" href="/category/{{auction.category}}" role="button"
+                style="margin: 10px;">
+                {{auction.category}}
+            </a>
+            {% endif %}
+
+            <img src="{{ auction.image }}" alt="{{ auction.title }}" class="img-fluid rounded-start" />
+
+        </div>
+        <!-- Add/Remove watchlist -->
+        <!-- Known bug: still find the way to make it one for add and otherwise... -->
+        <div class="col-md-8">
+            <div class="card-body">
+                <h5 class="card-title">{{ auction.title }}</h5>
+                {% if not user == auction.user %}
+                <form action="{% url 'add_watchlist' auction.id %}" method="post" style="float: right;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-info btn-sm" value="{{ auction.id }}">Add/Remove from
+                        watchlist</button>
+                </form>
+                {% endif %}
+
+                <p class="card-text">
+                    By: {{ auction.user|capfirst }}
+                </p>
+                <p class="card-text">
+                    {{ auction.description }}
+                </p>
+                <ul>
+                    <!-- Status -->
+                    {% if auction.winner is None %}
+                    <li>
+                        Status: <strong style="color: green; font-size: 15px;">Available</strong>
+                    </li>
+                    {% else %}
+                    <li>
+                        Status: <strong style="color: red; font-size: 15px">Sold</strong>
+                    </li>
+                    {% endif %}
+                    <!-- Auction detail -->
+                    <li>
+                        Price: <strong style="font-size: 15px;">${{ auction.price }}</strong>
+                    </li>
+                    <li>
+                        Starting bid: <strong style="font-size: 15px;">${{ auction.starting_bid }} </strong>
+                    </li>
+                    <li>
+                        Current price: <strong style="font-size: 15px;">${{ auction.current_price.amount__max}}
+                        </strong>
+                    </li>
+                    <li>
+                        Number of bids: <strong style="font-size: 15px">{{ auction.num_bids }}</strong>
+                    </li>
+                    <!-- Close bid  -->
+                </ul>
+                {% if user == auction.user%}
+                <form action="{% url 'close_bid' auction.id %}" method='post'>
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" value="{{ auction.id }}"
+                        style="margin-bottom: 30px;">Close bid
+                    </button>
+                </form>
+                {% else %}
+                <!-- Place bid -->
+                <form action="{% url 'bid_update' auction.id %}" method="post">
+                    {% csrf_token %}
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">$</span>
+                        <input type="number" name="amount" class="form-control">
+                        <button class="input-group-text" type="submit" value="{{ auction.id }}">
+                            Place bid
+                        </button>
+                    </div>
+                </form>
+                {% endif %}
+
+                <!-- Comment form -->
+                <div class="form-floating">
+                    <form method="post" action="{% url 'comment' auction.id %}">
+                        {% csrf_token %}
+                        <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea"
+                            name="comment"></textarea>
+                        <button type="submit" class="btn btn-outline-secondary btn-sm" value="{{ auction.id }}"
+                            style="margin-top: 15px;">Comment</button>
+                    </form>
+                    <!-- Previous comments -->
+                    {% for comment in auction.comments.all %}
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item" style="font-size: 15px;"><em>{{ comment.date }}
+                                "{{comment.user|capfirst }}"
+                                says: </em>
+                            <strong> {{ comment.text }}</strong>
+                        </li>
+                    </ul>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
